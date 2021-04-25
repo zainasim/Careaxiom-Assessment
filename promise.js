@@ -20,7 +20,7 @@ app.get('/I/want/title', (req, res) => {
     var f_addr;
     var ddata = [];
     var results = [];
-    if (!Array.isArray(qdata)) {
+    if (!Array.isArray(qdata)) {      //checking if address is an array or not
         var parse = url.parse(qdata, true);
         if (!parse.protocol) {
             f_addr = "https://" + qdata;
@@ -28,7 +28,7 @@ app.get('/I/want/title', (req, res) => {
         else {
             f_addr = qdata;
         }
-        getdata(f_addr)
+        getdata(f_addr)  //consuming promise
             .then(result => {
                 ddata.push(qdata);
                 results.push(result);
@@ -38,7 +38,7 @@ app.get('/I/want/title', (req, res) => {
                 console.log('Error: ' + e.message);
             });
     }
-    else {
+    else {  //if more than one address i.e. array
         f_addr = qdata;
         const promises = [];
         for (i = 0; i < f_addr.length; i++) {
@@ -51,7 +51,7 @@ app.get('/I/want/title', (req, res) => {
             }
             promises.push(getdata(f_addr[i]));
         }
-        Promise.all(promises)
+        Promise.all(promises)         //checks if all promises has been either resolve or reject
             .then((result) => {
                 //console.log("All done", results);
                 //ddata = { title: qdata, mesg: results };
@@ -66,7 +66,7 @@ app.get('/I/want/title', (req, res) => {
 
 function getdata(addr_list) {
     //var ret = [];
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {  //using promise
         var mySubString;
         https.get(addr_list, (response) => {
             let data = '';

@@ -17,7 +17,7 @@ app.get('/I/want/title', (req, res) => {
     var f_addr;
     var ddata = [];
     var addr_list = []
-    if (!Array.isArray(qdata)) {
+    if (!Array.isArray(qdata)) {              //checking if address is an array or not
         var parse = url.parse(qdata, true);
         if (!parse.protocol) {
             f_addr = "https://" + qdata;
@@ -26,13 +26,13 @@ app.get('/I/want/title', (req, res) => {
             f_addr = qdata;
         }
         addr_list.push(f_addr)
-        getdata(addr_list, function (result) {
+        getdata(addr_list, function (result) {   //uisng callback
             ddata.push(qdata);
             res.render("result", { title: ddata, mesg: result });
 
         });
     }
-    else {
+    else {                                     //if multiple addresses
         f_addr = qdata;
         for (i = 0; i < f_addr.length; i++) {
             var temp = url.parse(f_addr[i], true);
@@ -42,7 +42,7 @@ app.get('/I/want/title', (req, res) => {
             else {
                 f_addr[i] = f_addr[i];
             }
-            addr_list.push(f_addr[i])
+            addr_list.push(f_addr[i])                 //adding updated addresses in a list
         }
         getdata(addr_list, function (result) {
             res.render("result", { title: qdata, mesg: result });
@@ -57,8 +57,8 @@ function getdata(f_addr_list, callback) {
     var i;
     // helper function
     var check = function () {
-        if (totaltasks == tasksfinished) {
-            callback(ret);
+        if (totaltasks == tasksfinished) {//check to see if data from all addresses have been gathered
+            callback(ret);        //returning array
         }
     }
     for (i = 0; i < f_addr_list.length; i++) {
@@ -76,7 +76,7 @@ function getdata(f_addr_list, callback) {
                     data.lastIndexOf("<title>") + 7,
                     data.lastIndexOf("</title>")
                 );
-                ret.push(mySubString);
+                ret.push(mySubString); //adding response of addresses to an array
                 tasksfinished++;
                 check();
 
@@ -92,7 +92,7 @@ function getdata(f_addr_list, callback) {
 }
 
 
-app.get('*', function (req, res) {
+app.get('*', function (req, res) {           //if other route is used
     res.status(404).send('404 PAGE NOT FOUND');
 });
 const port = 3000;

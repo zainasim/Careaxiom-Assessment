@@ -20,7 +20,7 @@ app.get('/I/want/title', (req, res) => {
     var qdata = req.query.address;
     var f_addr;
     var ddata = [];
-    if (!Array.isArray(qdata)) {
+    if (!Array.isArray(qdata)) {         //checking if array or not
         var parse = url.parse(qdata, true);
         if (!parse.protocol) {
             f_addr = "https://" + qdata;
@@ -28,9 +28,9 @@ app.get('/I/want/title', (req, res) => {
         else {
             f_addr = qdata;
         }
-        async function display() {
+        async function display() {            //using async 
             try {
-                const result = await getdata(f_addr);
+                const result = await getdata(f_addr);   //wait for the response from promise
                 ddata.push(qdata);
                 res.render("result", { title: ddata, mesg: result });
             }
@@ -39,9 +39,9 @@ app.get('/I/want/title', (req, res) => {
             }
         }
         display();
-    }
-    else {
-        f_addr = qdata;
+    } 
+    else {                     //if more than one address i.e. array
+        f_addr = qdata; 
         var result;
         var iterator = 0;
         for (i = 0; i < f_addr.length; i++) {
@@ -52,9 +52,9 @@ app.get('/I/want/title', (req, res) => {
             else {
                 f_addr[i] = f_addr[i];
             }
-            async function get_data() {
+            async function get_data() {   //calling async function for each address
                 try {
-                    result = await getdata(f_addr[i]);
+                    result = await getdata(f_addr[i]);  //waiting for reponse from promise to proceed further
                     iterator++;
                     if (iterator == f_addr.length) {
                         res.render("result", { title: qdata, mesg: result });
