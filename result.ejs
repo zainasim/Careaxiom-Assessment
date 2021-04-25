@@ -6,9 +6,12 @@
     <h1> Following are the titles of given websites: </h1>
 
     <ul>
-        <li><%= y_data.title %>    -   <%= y_data.mesg %></li>
+        <% for(var i=0; i < title.length; i++) { %>
+            <li>
+                <%= title[i] %> - <%= mesg[i] %>
+            </li>
+        <% } %>
     </ul>
 </body>
 
 </html>
-

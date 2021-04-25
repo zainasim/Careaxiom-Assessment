@@ -19,7 +19,7 @@ var ret = [];
 app.get('/I/want/title', (req, res) => {
     var qdata = req.query.address;
     var f_addr;
-    var ddata;
+    var ddata = [];
     if (!Array.isArray(qdata)) {
         var parse = url.parse(qdata, true);
         if (!parse.protocol) {
@@ -31,8 +31,8 @@ app.get('/I/want/title', (req, res) => {
         async function display() {
             try {
                 const result = await getdata(f_addr);
-                ddata = { title: qdata, mesg: result };
-                res.render("result", { y_data: ddata });
+                ddata.push(qdata);
+                res.render("result", { title: ddata, mesg: result });
             }
             catch (err) {
                 console.log('Error', err.message);
@@ -43,6 +43,7 @@ app.get('/I/want/title', (req, res) => {
     else {
         f_addr = qdata;
         var result;
+        var iterator = 0;
         for (i = 0; i < f_addr.length; i++) {
             var temp = url.parse(f_addr[i], true);
             if (!temp.protocol) {
@@ -54,8 +55,10 @@ app.get('/I/want/title', (req, res) => {
             async function get_data() {
                 try {
                     result = await getdata(f_addr[i]);
-                    ddata = { title: qdata, mesg: result };
-                    //res.render("result", { y_data: ddata });
+                    iterator++;
+                    if (iterator == f_addr.length) {
+                        res.render("result", { title: qdata, mesg: result });
+                    }
                 }
                 catch (err) {
                     console.log('Error', err.message);
@@ -63,10 +66,6 @@ app.get('/I/want/title', (req, res) => {
             }
             get_data();
         }
-        setTimeout(() => {
-            res.render("result", { y_data: ddata });
-            //console.log(ddata);
-        }, 3000);
 
     }
 });
@@ -92,8 +91,10 @@ function getdata(f_addr) {
             });
 
         }).on("error", (err) => {
-            ddata = { title: f_addr, mesg: 'NO RESPONSE' }
-            res.render("result", { y_data: ddata });
+            const mesg = 'NO RESPONSE'
+            ret.push(mesg);
+            resolve(ret)
+            //res.render("result", { y_data: ddata });
         });
     });
 }

@@ -15,11 +15,11 @@ app.set("views", __dirname + "/");
 
 //Use body-parser
 app.use(bodyParser.urlencoded({ extended: false }));
-var ret = [];
 app.get('/I/want/title', (req, res) => {
     var qdata = req.query.address;
     var f_addr;
-    var ddata;
+    var ddata = [];
+    var results = [];
     if (!Array.isArray(qdata)) {
         var parse = url.parse(qdata, true);
         if (!parse.protocol) {
@@ -30,12 +30,17 @@ app.get('/I/want/title', (req, res) => {
         }
         getdata(f_addr)
             .then(result => {
-                ddata = { title: qdata, mesg: result };
-                res.render("result", { y_data: ddata });
+                ddata.push(qdata);
+                results.push(result);
+                res.render("result", { title: ddata, mesg: results });
+            })
+            .catch((e) => {
+                console.log('Error: ' + e.message);
             });
     }
     else {
         f_addr = qdata;
+        const promises = [];
         for (i = 0; i < f_addr.length; i++) {
             var temp = url.parse(f_addr[i], true);
             if (!temp.protocol) {
@@ -43,24 +48,27 @@ app.get('/I/want/title', (req, res) => {
             }
             else {
                 f_addr[i] = f_addr[i];
-            }   
-            getdata(f_addr[i])
-            .then(result => {
-                ddata = { title: qdata, mesg: result };
-            });
+            }
+            promises.push(getdata(f_addr[i]));
         }
-        setTimeout(() =>{
-            res.render("result", { y_data: ddata });
-            //console.log(ddata);
-        },3000);
-        
+        Promise.all(promises)
+            .then((result) => {
+                //console.log("All done", results);
+                //ddata = { title: qdata, mesg: results };
+                res.render("result", { title: qdata, mesg: result });
+            })
+            .catch((e) => {
+                // Handle errors here
+                console.log('Error: ' + e.message);
+            });
     }
 });
 
-function getdata(f_addr) {
+function getdata(addr_list) {
+    //var ret = [];
     return new Promise((resolve, reject) => {
         var mySubString;
-        https.get(f_addr, (response) => {
+        https.get(addr_list, (response) => {
             let data = '';
 
             // A chunk of data has been received.
@@ -73,15 +81,15 @@ function getdata(f_addr) {
                     data.lastIndexOf("<title>") + 7,
                     data.lastIndexOf("</title>")
                 );
-                ret.push(mySubString);
-                resolve(ret);
+                resolve(mySubString);
             });
 
         }).on("error", (err) => {
-            ddata = { title: f_addr, mesg: 'NO RESPONSE' }
-            res.render("result", { y_data: ddata });
+            var mesg = 'NO RESPONSE';
+            resolve(mesg)
         });
     });
+
 }
 
 //res.send(qdata);

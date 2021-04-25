@@ -12,11 +12,11 @@ app.set("views", __dirname + "/");
 
 //Use body-parser
 app.use(bodyParser.urlencoded({ extended: false }));
-var ret = [];
 app.get('/I/want/title', (req, res) => {
     var qdata = req.query.address;
     var f_addr;
-    var ddata;
+    var ddata = [];
+    var addr_list = []
     if (!Array.isArray(qdata)) {
         var parse = url.parse(qdata, true);
         if (!parse.protocol) {
@@ -25,11 +25,11 @@ app.get('/I/want/title', (req, res) => {
         else {
             f_addr = qdata;
         }
-        getdata(f_addr, function (result) {
-            ddata = { title: qdata, mesg: result };
-            setTimeout(() => {
-                res.render("result", { y_data: ddata });
-            }, 2000);
+        addr_list.push(f_addr)
+        getdata(addr_list, function (result) {
+            ddata.push(qdata);
+            res.render("result", { title: ddata, mesg: result });
+
         });
     }
     else {
@@ -42,42 +42,53 @@ app.get('/I/want/title', (req, res) => {
             else {
                 f_addr[i] = f_addr[i];
             }
-            getdata(f_addr[i], function (result) {
-                ddata = { title: qdata, mesg: result };
-
-            });
+            addr_list.push(f_addr[i])
         }
-        setTimeout(() => {
-            res.render("result", { y_data: ddata });
-        }, 4000);
+        getdata(addr_list, function (result) {
+            res.render("result", { title: qdata, mesg: result });
+        });
     }
 });
 
-function getdata(f_addr, callback) {
-    var mySubString;
-    https.get(f_addr, (response) => {
-        let data = '';
+function getdata(f_addr_list, callback) {
+    var totaltasks = f_addr_list.length;
+    var tasksfinished = 0;
+    var ret = [];
+    var i;
+    // helper function
+    var check = function () {
+        if (totaltasks == tasksfinished) {
+            callback(ret);
+        }
+    }
+    for (i = 0; i < f_addr_list.length; i++) {
+        var mySubString;
+        https.get(f_addr_list[i], (response) => {
+            let data = '';
 
-        // A chunk of data has been received.
-        response.on('data', (chunk) => {
-            data += chunk;
+            // A chunk of data has been received.
+            response.on('data', (chunk) => {
+                data += chunk;
+            });
+
+            response.on('end', () => {
+                mySubString = data.substring(
+                    data.lastIndexOf("<title>") + 7,
+                    data.lastIndexOf("</title>")
+                );
+                ret.push(mySubString);
+                tasksfinished++;
+                check();
+
+            });
+
+        }).on("error", (err) => {
+            var edata = 'NO RESPONSE';
+            tasksfinished++;
+            ret.push(edata)
+            check();
         });
-
-        response.on('end', () => {
-            mySubString = data.substring(
-                data.lastIndexOf("<title>") + 7,
-                data.lastIndexOf("</title>")
-            );
-            ret.push(mySubString);
-            setTimeout(() => {
-                callback(ret);
-            }, 2000);
-        });
-
-    }).on("error", (err) => {
-        var edata = 'NO RESPONSE';
-        callback(edata);
-    });
+    }
 }
 
 
